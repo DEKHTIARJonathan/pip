@@ -162,4 +162,12 @@ def get_supported(
         )
     )
 
+    from pip._internal.utils.custom_arch_plugin import get_all_custom_archs
+
+    for arch in get_all_custom_archs():
+        # Duplicate all tags with custom HW tag
+        supported = [
+            Tag.create_from_tag(tag, arch) for tag in supported
+        ] + supported
+
     return supported

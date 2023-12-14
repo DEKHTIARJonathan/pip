@@ -192,6 +192,16 @@ class InstallCommand(RequirementCommand):
             ),
         )
 
+        self.cmd_opts.add_option(
+            "--custom_arch",
+            dest="custom_arch",
+            default=None,
+            help=(
+                "Determines if the installation needs to take into account "
+                "a custom hardware architecture tag."
+            ),
+        )
+
         self.cmd_opts.add_option(cmdoptions.ignore_requires_python())
         self.cmd_opts.add_option(cmdoptions.no_build_isolation())
         self.cmd_opts.add_option(cmdoptions.use_pep517())
@@ -266,6 +276,15 @@ class InstallCommand(RequirementCommand):
     def run(self, options: Values, args: List[str]) -> int:
         if options.use_user_site and options.target_dir is not None:
             raise CommandError("Can not combine '--user' and '--target'")
+
+        if options.custom_arch:
+            try:
+                import importlib
+                importlib.import_module(options.custom_arch)
+            except ImportError:
+                raise ImportError(
+                    f"Impossible to import custom architecture plugin `{options.custom_arch}`, "
+                    f"Please install plugin first: `pip install {options.custom_arch}`")
 
         # Check whether the environment we're installing into is externally
         # managed, as specified in PEP 668. Specifying --root, --target, or
