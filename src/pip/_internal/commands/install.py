@@ -193,8 +193,8 @@ class InstallCommand(RequirementCommand):
         )
 
         self.cmd_opts.add_option(
-            "--custom_arch",
-            dest="custom_arch",
+            "--arch",
+            dest="arch",
             default=None,
             help=(
                 "Determines if the installation needs to take into account "
@@ -277,14 +277,16 @@ class InstallCommand(RequirementCommand):
         if options.use_user_site and options.target_dir is not None:
             raise CommandError("Can not combine '--user' and '--target'")
 
-        if options.custom_arch:
+        hw_arch = options.arch or os.environ.get("PIP_CUSTOM_ARCH", None)
+        print(f"{os.environ.get("PIP_CUSTOM_ARCH", None)=}")
+        if hw_arch:
             try:
                 import importlib
-                importlib.import_module(options.custom_arch)
+                importlib.import_module(hw_arch)
             except ImportError:
                 raise ImportError(
-                    f"Impossible to import custom architecture plugin `{options.custom_arch}`, "
-                    f"Please install plugin first: `pip install {options.custom_arch}`")
+                    f"Impossible to import custom architecture plugin `{hw_arch}`, "
+                    f"Please install plugin first: `pip install {hw_arch}`")
 
         # Check whether the environment we're installing into is externally
         # managed, as specified in PEP 668. Specifying --root, --target, or
