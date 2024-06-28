@@ -1,0 +1,44 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/docker-existing-dockerfile
+{
+    "name": "PIP Development Container",
+    "build": {
+        "context": "..",
+        "dockerfile": "Dockerfile"
+    },
+    "workspaceFolder": "/workspaces/pip",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/pip,type=bind",
+    "mounts": [
+        "source=${localWorkspaceFolder}/../pip_custom_arch_plugin,target=/workspaces/pip_plugin,type=bind",
+        "source=${localWorkspaceFolder}/../pipserver,target=/workspaces/pipserver,type=bind"
+    ],
+    "runArgs": [
+        "--gpus=all"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                // Python
+                "ms-python.python",
+                // Build Tools
+                "ms-azuretools.vscode-docker",
+                // Git & Github
+                "GitHub.vscode-pull-request-github",
+                // Makefile
+                "ms-vscode.makefile-tools"
+            ]
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "username": "pip",
+            "installZsh": true,
+            "installOhMyZsh": true,
+            "configureZshAsDefaultShell": false,
+            "upgradePackages": false
+        },
+        "ghcr.io/devcontainers/features/git:1": {
+            "version": "latest"
+        }
+    }
+}

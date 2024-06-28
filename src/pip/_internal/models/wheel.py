@@ -15,7 +15,7 @@ class Wheel:
     wheel_file_re = re.compile(
         r"""^(?P<namever>(?P<name>[^\s-]+?)-(?P<ver>[^\s-]*?))
         ((-(?P<build>\d[^-]*?))?-(?P<pyver>[^\s-]+?)-(?P<abi>[^\s-]+?)-(?P<plat>[^\s-]+?)
-        \.whl|\.dist-info)$""",
+        (-(?P<custom_hw>[^\s-]+?))?\.whl|\.dist-info)$""",
         re.VERBOSE,
     )
 
@@ -35,10 +35,18 @@ class Wheel:
         self.pyversions = wheel_info.group("pyver").split(".")
         self.abis = wheel_info.group("abi").split(".")
         self.plats = wheel_info.group("plat").split(".")
+        try:
+            self.custom_hws = wheel_info.group("custom_hw").split(".")
+        except AttributeError:
+            self.custom_hws = [""]
 
         # All the tag combinations from this file
         self.file_tags = {
-            Tag(x, y, z) for x in self.pyversions for y in self.abis for z in self.plats
+            Tag(x, y, z, hw)
+            for x in self.pyversions
+            for y in self.abis
+            for z in self.plats
+            for hw in self.custom_hws
         }
 
     def get_formatted_file_tags(self) -> List[str]:

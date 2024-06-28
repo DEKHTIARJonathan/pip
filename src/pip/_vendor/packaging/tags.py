@@ -18,6 +18,7 @@ from typing import (
     Tuple,
     Union,
     cast,
+    Self
 )
 
 from . import _manylinux, _musllinux
@@ -47,18 +48,28 @@ class Tag:
     is also supported.
     """
 
-    __slots__ = ["_interpreter", "_abi", "_platform", "_hash"]
+    __slots__ = ["_interpreter", "_abi", "_platform", "_custom_arch", "_hash"]
 
-    def __init__(self, interpreter: str, abi: str, platform: str) -> None:
+    @staticmethod
+    def create_from_tag(tag: Self, custom_arch: str) -> Self:
+        return Tag(
+            interpreter=tag.interpreter,
+            abi=tag.abi,
+            platform=tag.platform,
+            custom_arch=custom_arch
+        )
+
+    def __init__(self, interpreter: str, abi: str, platform: str, custom_arch: Optional[str] = "") -> None:
         self._interpreter = interpreter.lower()
         self._abi = abi.lower()
         self._platform = platform.lower()
+        self._custom_arch = custom_arch.lower()
         # The __hash__ of every single element in a Set[Tag] will be evaluated each time
         # that a set calls its `.disjoint()` method, which may be called hundreds of
         # times when scanning a page of links for packages with tags matching that
         # Set[Tag]. Pre-computing the value here produces significant speedups for
         # downstream consumers.
-        self._hash = hash((self._interpreter, self._abi, self._platform))
+        self._hash = hash((self._interpreter, self._abi, self._platform, self._custom_arch))
 
     @property
     def interpreter(self) -> str:
@@ -71,6 +82,10 @@ class Tag:
     @property
     def platform(self) -> str:
         return self._platform
+    
+    @property
+    def custom_arch(self) -> str:
+        return self._custom_arch
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Tag):
@@ -81,13 +96,17 @@ class Tag:
             and (self._platform == other._platform)
             and (self._abi == other._abi)
             and (self._interpreter == other._interpreter)
+            and (self._custom_arch == other._custom_arch)
         )
 
     def __hash__(self) -> int:
         return self._hash
 
     def __str__(self) -> str:
-        return f"{self._interpreter}-{self._abi}-{self._platform}"
+        name = f"{self._interpreter}-{self._abi}-{self._platform}"
+        if self._custom_arch:
+            name += f"-{self._custom_arch}"
+        return name
 
     def __repr__(self) -> str:
         return f"<{self} @ {id(self)}>"
